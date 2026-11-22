@@ -73,17 +73,22 @@ data class ScanResult(val findings: List<Finding>, val device: DeviceStatus)
 
 object Scanner {
 
-    /** App stores we treat as "reviewed source". Anything else (browser, file manager, chat app, adb) counts as sideloaded. */
+    /**
+     * App stores we treat as "reviewed source". Anything else (browser, file manager, chat app, adb) counts as sideloaded.
+     * A package name proves nothing by itself, so a store only counts when it is part of the firmware
+     * or signed with a firmware key: see [scan].
+     */
     private val TRUSTED_INSTALLERS = setOf(
         "com.android.vending", "com.google.android.feedback",         // Google Play
         "com.sec.android.app.samsungapps",                             // Galaxy Store
         "com.huawei.appmarket",
         "com.xiaomi.market", "com.xiaomi.mipicks", "com.xiaomi.discover",
         "com.heytap.market", "com.oppo.market", "com.oplus.market",
-        "com.bbk.appstore",                                            // vivo
+        "com.bbk.appstore", "com.vivo.appstore",
+        "com.hihonor.appmarket",
+        "com.transsnet.store",                                         // Tecno / Infinix / itel
         "com.amazon.venezia",
         "com.asus.appmarket",
-        "com.google.android.packageinstaller.private.preinstalled",
         "com.android.chrome",                                          // WebAPKs minted by Google for PWAs
     )
 
@@ -91,6 +96,25 @@ object Scanner {
     private val OS_INSTALLERS = setOf(
         "com.android.settings", "com.android.vending", "com.android.packageinstaller",
         "com.google.android.packageinstaller", "com.android.shell", "com.google.android.gms",
+    )
+
+    /** What installs an APK the user tapped in a browser, chat app or file manager, or pushed over USB. */
+    private val GENERIC_INSTALLERS = setOf(
+        "com.google.android.packageinstaller", "com.android.packageinstaller",
+        "com.samsung.android.packageinstaller", "com.miui.packageinstaller", "com.android.shell",
+    )
+
+    /**
+     * SHA-256 of the AOSP sample signing keys (testkey, platform, shared, media, networkstack).
+     * Their private halves are public, and some cheap ROMs ship signed with them, so on those phones
+     * "signed like the firmware" proves nothing.
+     */
+    private val PUBLIC_TEST_CERTS = setOf(
+        "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc",
+        "c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8",
+        "28bbfe4a7b97e74681dc55c2fbb6ccb8d6c74963733f6af6ae74d8c3a6e879fd",
+        "465983f7791f2abeb43ea2cbdc7f21a8260b72bc08a55c839fc1a43bc741a81e",
+        "e1dbadce60dc080d15b58a014b0dcf9400e24de23fa00b287a5a982bfebda2ee",
     )
 
     private const val RECENT_MS = 30L * 24 * 60 * 60 * 1000
@@ -119,9 +143,16 @@ object Scanner {
 
         val apps = runCatching { pm.getInstalledApplications(0) }.getOrDefault(emptyList())
         val firmwareCerts by lazy {
-            apps.filter { it.flags and ApplicationInfo.FLAG_SYSTEM != 0 }.flatMap { certsOf(pm, it.packageName) }.toSet()
+            apps.filter { it.flags and ApplicationInfo.FLAG_SYSTEM != 0 }.flatMap { certsOf(pm, it.packageName) }.toSet() -
+                PUBLIC_TEST_CERTS
         }
         val vendorSigned = { pkg: String -> certsOf(pm, pkg).any { it in firmwareCerts } }
+        val systemPkgs = apps.filter { it.flags and ApplicationInfo.FLAG_SYSTEM != 0 }.map { it.packageName }.toSet()
+        // Anyone can name an app "com.android.vending"; only the real one is in the firmware or signed like it.
+        val genuineStore = HashMap<String, Boolean>()
+        val isGenuineStore = { inst: String ->
+            genuineStore.getOrPut(inst) { inst in TRUSTED_INSTALLERS && (inst in systemPkgs || vendorSigned(inst)) }
+        }
         val now = System.currentTimeMillis()
 
         val findings = apps.asSequence()
@@ -161,7 +192,12 @@ object Scanner {
                 val installer = installerOf(pm, pkg)
                 // Vendor apps delivered outside a store (Galaxy Wearable plugins, Samsung update center,
                 // Smart Switch) carry the same signing key as the firmware's own apps; malware cannot.
-                val sideloaded = !isSystem && installer !in TRUSTED_INSTALLERS && !vendorSigned(pkg)
+                // That only holds when it also arrived through a vendor channel: vendor keys have leaked
+                // before, and a scam APK always comes in through the generic installer.
+                val official = !fromFile(pm, pkg) && installer != null && (
+                    isGenuineStore(installer) || (installer !in GENERIC_INSTALLERS && vendorSigned(pkg))
+                )
+                val sideloaded = !isSystem && !official
                 // VPN apps are normal from a store; a sideloaded one is not.
                 if (pkg in vpnApps && sideloaded) risks += Risk.VPN
 
@@ -243,6 +279,14 @@ object Scanner {
         if (Build.VERSION.SDK_INT >= 30) pm.getInstallSourceInfo(pkg).installingPackageName
         else @Suppress("DEPRECATION") pm.getInstallerPackageName(pkg)
     }.getOrNull()
+
+    /** Android 13+: the installer itself recorded that this came from an APK file. */
+    private fun fromFile(pm: PackageManager, pkg: String): Boolean = Build.VERSION.SDK_INT >= 33 && runCatching {
+        pm.getInstallSourceInfo(pkg).packageSource.let {
+            it == android.content.pm.PackageInstaller.PACKAGE_SOURCE_LOCAL_FILE ||
+                it == android.content.pm.PackageInstaller.PACKAGE_SOURCE_DOWNLOADED_FILE
+        }
+    }.getOrDefault(false)
 
     private fun vpnActive(ctx: Context): Boolean = runCatching {
         val cm = ctx.getSystemService(ConnectivityManager::class.java)

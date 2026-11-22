@@ -16,12 +16,15 @@
 <p>為了找出危險的 App，本 App 只在你的手機上讀取以下資訊，結果只顯示在畫面上，不會離開你的手機：</p>
 <ul>
 <li>已安裝的 App 名稱、圖示、套件名稱、安裝時間與安裝來源（例如是否從 Google Play 安裝）。</li>
-<li>哪些 App 已被開啟無障礙服務、通知存取、裝置管理員、顯示在其他應用程式上層、安裝其他應用程式，或被授予讀取／接收簡訊權限。</li>
+<li>哪些 App 已被開啟無障礙服務、通知存取、裝置管理員、顯示在其他應用程式上層、安裝其他應用程式、使用情況存取，被授予簡訊、通話紀錄、撥打電話權限，被設為預設簡訊或電話 App，是已啟用的輸入法，或提供 VPN 服務。</li>
+<li>目前是否有 VPN 連線、USB 偵錯是否開啟（只讀取開或關，不讀取連線內容）。</li>
 </ul>
 <p>本 App <strong>不會</strong>讀取你的簡訊、通知、聯絡人或螢幕內容。</p>
 <p>你標記為「我認得這個 App」的清單只存在本機，解除安裝本 App 就會一起刪除。</p>
 <h2>權限</h2>
 <ul>
+<li><code>QUERY_ALL_PACKAGES</code>：本 App 的核心功能是檢查手機上<strong>每一個</strong>已安裝的 App 是否有危險權限；惡意 App 常隱藏桌面圖示，必須能看到全部 App 才不會漏掉。這份清單只在本機使用，不會傳出。</li>
+<li><code>ACCESS_NETWORK_STATE</code>：只用來判斷目前是否有 VPN 連線。本 App 沒有網路權限。</li>
 <li><code>REQUEST_DELETE_PACKAGES</code>：讓你在本 App 內按「解除安裝」時，叫出系統的解除安裝確認畫面。實際解除安裝前，系統一定會再請你確認。</li>
 </ul>
 <h2>兒童</h2>
@@ -35,9 +38,10 @@
 <p>Who's Spying ("the app", package io.github.magiclin99.whoisspy) collects no data.</p>
 <ul>
 <li>The app does not collect, store or transmit any personal or device data. It has no internet permission and contains no ads, analytics or tracking SDKs.</li>
-<li>To find risky apps it reads, on your device only: installed apps' names, icons, package names, install time and install source; and which apps currently hold Accessibility, Notification access, Device admin, Display over other apps, Install unknown apps, or SMS permissions. Results are shown on screen and never leave your device.</li>
+<li>To find risky apps it reads, on your device only: installed apps' names, icons, package names, install time and install source; which apps currently hold Accessibility, Notification access, Device admin, Display over other apps, Install unknown apps, Usage access, SMS / call log / phone permissions, are the default SMS or phone app, are enabled keyboards, or provide a VPN; and whether a VPN is connected and USB debugging is on. Results are shown on screen and never leave your device.</li>
 <li>The app never reads your messages, notifications, contacts or screen content.</li>
 <li>Apps you mark as "I know this app" are stored locally and deleted when you uninstall the app.</li>
+<li><code>QUERY_ALL_PACKAGES</code> is the core function: every installed app must be inspected because malware often hides its launcher icon. The list never leaves the device. <code>ACCESS_NETWORK_STATE</code> is used only to tell whether a VPN is active; the app has no internet permission.</li>
 <li><code>REQUEST_DELETE_PACKAGES</code> is used only to open the system uninstall confirmation when you tap "Uninstall".</li>
 </ul>
 <p>Contact: <a href="https://github.com/magiclin99/whoisspy/issues">GitHub Issues</a>.</p>

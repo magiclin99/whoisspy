@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -64,21 +65,23 @@ private class Trusted(ctx: Context) {
 private fun App() {
     val ctx = LocalContext.current
     val trustedStore = remember { Trusted(ctx) }
-    var findings by remember { mutableStateOf<List<Finding>?>(null) }
+    var result by remember { mutableStateOf<ScanResult?>(null) }
     var trusted by remember { mutableStateOf(trustedStore.all()) }
     var scanTick by remember { mutableIntStateOf(0) }
 
     // Rescan every time the user comes back from a settings screen, so fixed items disappear immediately.
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { scanTick++ }
     LaunchedEffect(scanTick) {
-        findings = withContext(Dispatchers.Default) { Scanner.scan(ctx) }
+        result = withContext(Dispatchers.Default) { Scanner.scan(ctx) }
     }
 
-    val all = findings
+    val all = result?.findings
     val active = all?.filter { it.packageName !in trusted }.orEmpty()
     val danger = active.filter { it.level == Level.DANGER }
     val warn = active.filter { it.level == Level.WARNING }
+    val sideloadedOnly = active.filter { it.level == Level.SIDELOADED }
     val trustedItems = all?.filter { it.packageName in trusted }.orEmpty()
+    val onTrust: (Finding) -> Unit = { f -> trustedStore.set(f.packageName, true); trusted = trustedStore.all() }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize().safeDrawingPadding(),
@@ -90,11 +93,22 @@ private fun App() {
             Text(stringResource(R.string.tagline), color = Muted, fontSize = 14.sp)
         }
         item { Summary(all == null, danger.size, warn.size) }
+        result?.device?.let { d ->
+            if (d.vpnActive) item { DeviceBanner(R.string.device_vpn) { Fixes.openVpnSettings(ctx) } }
+            if (d.adbEnabled) item { DeviceBanner(R.string.device_adb) { Fixes.openDeveloperSettings(ctx) } }
+        }
 
         if (danger.isNotEmpty()) item { SectionTitle(stringResource(R.string.section_danger), Danger) }
-        items(danger, key = { it.packageName }) { f -> FindingCard(f) { trustedStore.set(f.packageName, true); trusted = trustedStore.all() } }
+        items(danger, key = { it.packageName }) { f -> FindingCard(f) { onTrust(f) } }
         if (warn.isNotEmpty()) item { SectionTitle(stringResource(R.string.section_warning), Warn) }
-        items(warn, key = { it.packageName }) { f -> FindingCard(f) { trustedStore.set(f.packageName, true); trusted = trustedStore.all() } }
+        items(warn, key = { it.packageName }) { f -> FindingCard(f) { onTrust(f) } }
+        if (sideloadedOnly.isNotEmpty()) {
+            item {
+                SectionTitle(stringResource(R.string.section_sideloaded, sideloadedOnly.size), Ink)
+                Text(stringResource(R.string.section_sideloaded_desc), color = Muted, fontSize = 12.sp)
+            }
+            items(sideloadedOnly, key = { it.packageName }) { f -> FindingCard(f) { onTrust(f) } }
+        }
 
         if (trustedItems.isNotEmpty()) {
             item { SectionTitle(stringResource(R.string.section_trusted, trustedItems.size), Muted) }
@@ -103,6 +117,22 @@ private fun App() {
             }
         }
         item { Tips() }
+        item {
+            Text(
+                stringResource(R.string.privacy_policy), color = Muted, fontSize = 12.sp,
+                modifier = Modifier.fillMaxWidth().clickable {
+                    runCatching {
+                        ctx.startActivity(
+                            android.content.Intent(
+                                android.content.Intent.ACTION_VIEW,
+                                android.net.Uri.parse("https://magiclin99.github.io/whoisspy/privacy.html"),
+                            ),
+                        )
+                    }
+                }.padding(vertical = 12.dp),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            )
+        }
     }
 }
 
@@ -136,10 +166,11 @@ private fun AppIcon(f: Finding, size: Int = 44) {
     else Box(Modifier.size(size.dp).background(Color.LightGray, CircleShape))
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun FindingCard(f: Finding, onTrust: () -> Unit) {
     val ctx = LocalContext.current
-    val accent = if (f.level == Level.DANGER) Danger else Warn
+    val accent = when (f.level) { Level.DANGER -> Danger; Level.WARNING -> Warn; else -> Muted }
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(16.dp),
@@ -155,15 +186,16 @@ private fun FindingCard(f: Finding, onTrust: () -> Unit) {
             }
             val tags = buildList {
                 if (f.sideloaded) add(stringResource(R.string.tag_sideloaded))
+                if (f.hiddenIcon) add(stringResource(R.string.tag_hidden))
                 if (f.recentlyInstalled) add(stringResource(R.string.tag_recent))
                 if (f.isSystem) add(stringResource(R.string.tag_system))
             }
             if (tags.isNotEmpty()) {
-                Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                FlowRow(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     tags.forEach { Tag(it, accent) }
                 }
             }
-            HorizontalDivider(Modifier.padding(vertical = 10.dp), color = Color(0xFFEDEEF2))
+            if (f.risks.isNotEmpty()) HorizontalDivider(Modifier.padding(vertical = 10.dp), color = Color(0xFFEDEEF2))
             f.risks.forEach { r -> RiskRow(r) { Fixes.revoke(ctx, f, r) } }
 
             if (Risk.DEVICE_ADMIN in f.risks) {
@@ -201,6 +233,10 @@ private fun RiskRow(r: Risk, onFix: () -> Unit) {
         Risk.DEVICE_ADMIN -> R.string.risk_admin to R.string.risk_admin_desc
         Risk.OVERLAY -> R.string.risk_overlay to R.string.risk_overlay_desc
         Risk.INSTALL_APPS -> R.string.risk_install to R.string.risk_install_desc
+        Risk.KEYBOARD -> R.string.risk_keyboard to R.string.risk_keyboard_desc
+        Risk.CALLS -> R.string.risk_calls to R.string.risk_calls_desc
+        Risk.VPN -> R.string.risk_vpn to R.string.risk_vpn_desc
+        Risk.USAGE_ACCESS -> R.string.risk_usage to R.string.risk_usage_desc
     }
     Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f).padding(end = 8.dp)) {
@@ -210,6 +246,17 @@ private fun RiskRow(r: Risk, onFix: () -> Unit) {
         FilledTonalButton(onClick = onFix, contentPadding = PaddingValues(horizontal = 14.dp)) {
             Text(stringResource(R.string.action_revoke))
         }
+    }
+}
+
+@Composable
+private fun DeviceBanner(text: Int, onClick: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().background(WarnBg, RoundedCornerShape(12.dp)).padding(horizontal = 14.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(stringResource(text), Modifier.weight(1f).padding(end = 8.dp), color = Ink, fontSize = 13.sp)
+        FilledTonalButton(onClick = onClick) { Text(stringResource(R.string.action_check)) }
     }
 }
 

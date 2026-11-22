@@ -2,7 +2,6 @@ import java.util.Properties
 
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
@@ -13,7 +12,7 @@ val keystoreProps = Properties().apply {
 
 android {
     namespace = "io.github.magiclin99.whoisspy"
-    compileSdk = 36
+    compileSdk { version = release(37) { minorApiLevel = 2 } }
 
     defaultConfig {
         applicationId = "io.github.magiclin99.whoisspy"
@@ -51,7 +50,7 @@ android {
 }
 
 dependencies {
-    val bom = platform("androidx.compose:compose-bom:2025.09.00")
+    val bom = platform("androidx.compose:compose-bom:2026.11.01")
     implementation(bom)
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.ui:ui")
@@ -59,8 +58,4 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.10.1")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.2")
     implementation("androidx.core:core-ktx:1.16.0")
-}
-
-kotlin {
-    compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) }
 }

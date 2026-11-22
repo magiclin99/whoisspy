@@ -37,4 +37,19 @@
     <string name="tip_2">只從 Google Play 安裝 App。</string>
     <string name="tip_3">驗證碼不要告訴任何人，自稱銀行行員也一樣。</string>
     <string name="tip_4">懷疑被盜轉，馬上打給銀行並撥打 165 反詐騙專線。</string>
+    <string name="section_sideloaded">其他非商店安裝的 App（%d）</string>
+    <string name="section_sideloaded_desc">目前沒有危險權限，但只要你不認得，就解除安裝。</string>
+    <string name="tag_hidden">隱藏圖示</string>
+    <string name="risk_keyboard">第三方輸入法</string>
+    <string name="risk_keyboard_desc">你打的驗證碼和密碼它都看得到。</string>
+    <string name="risk_calls">電話與通話紀錄</string>
+    <string name="risk_calls_desc">能讀通話紀錄、撥打或轉接電話，例如把你打給銀行的電話轉到假客服。</string>
+    <string name="risk_vpn">VPN</string>
+    <string name="risk_vpn_desc">非商店安裝的 VPN 能監看或導向你的網路連線。</string>
+    <string name="risk_usage">使用情況存取</string>
+    <string name="risk_usage_desc">知道你何時打開銀行 App，好在那一刻跳出假畫面。</string>
+    <string name="device_vpn">現在有 VPN 連線中，請確認是你自己設定的。</string>
+    <string name="device_adb">USB 偵錯已開啟。不是開發者的話請關閉。</string>
+    <string name="action_check">檢查</string>
+    <string name="privacy_policy">隱私權政策</string>
 </resources>

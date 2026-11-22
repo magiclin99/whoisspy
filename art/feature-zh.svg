@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="500" viewBox="0 0 1024 500">
+  <rect width="1024" height="500" fill="#1F2A44"/>
+  <g transform="translate(80 145) scale(3.3)">
+    <path fill="#FFFFFF" d="M54,24 L78,32 V52 C78,68 67,79 54,85 C41,79 30,68 30,52 V32 Z" transform="translate(-30 -24)"/>
+    <g transform="translate(-30 -24)">
+      <path stroke="#E5484D" stroke-width="6" stroke-linecap="round" d="M59.5,58.5 L67,66"/>
+      <circle cx="51" cy="50" r="11" stroke="#1F2A44" stroke-width="5" fill="none"/>
+      <circle cx="51" cy="50" r="4" fill="#E5484D"/>
+    </g>
+  </g>
+  <text x="300" y="215" font-family="PingFang TC, Helvetica Neue, sans-serif" font-size="84" font-weight="700" fill="#FFFFFF">誰是間諜</text>
+  <text x="302" y="290" font-family="PingFang TC, Helvetica Neue, sans-serif" font-size="34" fill="#C9D1E3">找出偷看驗證碼、遠端操控手機的 App</text>
+  <text x="302" y="345" font-family="PingFang TC, Helvetica Neue, sans-serif" font-size="34" fill="#FF8A8E">一鍵關閉權限或解除安裝</text>
+</svg>

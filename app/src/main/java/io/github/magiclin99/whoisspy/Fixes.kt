@@ -19,7 +19,7 @@ object Fixes {
         val candidates: List<Intent> = when (risk) {
             Risk.ACCESSIBILITY -> listOfNotNull(
                 f.accessibilityComponent?.takeIf { Build.VERSION.SDK_INT >= 30 }?.let {
-                    Intent(Settings.ACTION_ACCESSIBILITY_DETAILS_SETTINGS)
+                    Intent("android.settings.ACCESSIBILITY_DETAILS_SETTINGS")
                         .putExtra(Intent.EXTRA_COMPONENT_NAME, it.flattenToString())
                 },
                 Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS),
@@ -38,10 +38,21 @@ object Fixes {
             )
             Risk.OVERLAY -> listOf(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, pkgUri))
             Risk.INSTALL_APPS -> listOf(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, pkgUri))
-            Risk.SMS -> listOf(appDetails(f.packageName))
+            Risk.SMS, Risk.CALLS -> listOf(appDetails(f.packageName), Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS))
+            Risk.KEYBOARD -> listOf(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS))
+            Risk.VPN -> listOf(Intent(Settings.ACTION_VPN_SETTINGS))
+            Risk.USAGE_ACCESS -> listOfNotNull(
+                Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS, pkgUri).takeIf { Build.VERSION.SDK_INT >= 29 },
+                Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS),
+            )
         }
         launchFirst(ctx, candidates + appDetails(f.packageName))
     }
+
+    fun openVpnSettings(ctx: Context) = launchFirst(ctx, listOf(Intent(Settings.ACTION_VPN_SETTINGS)))
+
+    fun openDeveloperSettings(ctx: Context) =
+        launchFirst(ctx, listOf(Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS), Intent(Settings.ACTION_SETTINGS)))
 
     fun openAppInfo(ctx: Context, pkg: String) = launchFirst(ctx, listOf(appDetails(pkg)))
 

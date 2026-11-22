@@ -4,11 +4,21 @@
     <!-- Lets the user uninstall a suspicious app from inside this app (system still asks to confirm). -->
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
 
+    <!-- Only to tell whether a VPN is currently active. The app has no INTERNET permission. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <!--
-      Package visibility without QUERY_ALL_PACKAGES: we only need apps that can
-      steal OTPs or take over the phone, and every such app declares one of these.
+      Core function: inspect every installed app for OTP-stealing capabilities.
+      Security / anti-malware is a permitted use case under Play's package visibility policy.
+      The <queries> below keep the scanner working even on builds that filter visibility.
     -->
+    <uses-permission
+        android:name="android.permission.QUERY_ALL_PACKAGES"
+        xmlns:tools="http://schemas.android.com/tools"
+        tools:ignore="QueryAllPackagesPermission" />
     <queries>
+        <intent><action android:name="android.view.InputMethod" /></intent>
+        <intent><action android:name="android.net.VpnService" /></intent>
         <intent><action android:name="android.intent.action.MAIN" /></intent>
         <intent><action android:name="android.accessibilityservice.AccessibilityService" /></intent>
         <intent><action android:name="android.service.notification.NotificationListenerService" /></intent>

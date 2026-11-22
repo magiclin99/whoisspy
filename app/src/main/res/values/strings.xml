@@ -4,7 +4,7 @@
     <string name="tagline">Find apps that can steal your OTP codes, and shut them down.</string>
     <string name="scanning">Checking your phone…</string>
     <string name="summary_danger">%d dangerous app(s) found</string>
-    <string name="summary_danger_body">These apps were not installed from an app store and can read your verification codes or control your phone. Unless you are sure what they are, uninstall them now.</string>
+    <string name="summary_danger_body">These apps come from unknown sources and can read your verification codes or control your phone. Unless you are sure what they are, uninstall them now.</string>
     <string name="summary_warning">%d app(s) need a check</string>
     <string name="summary_warning_body">They can read important information or operate your phone. Fine if you turned it on yourself. Otherwise turn it off.</string>
     <string name="summary_safe">No suspicious apps found</string>
@@ -12,7 +12,7 @@
     <string name="section_danger">Dangerous</string>
     <string name="section_warning">Please check</string>
     <string name="section_trusted">Apps you recognise (%d)</string>
-    <string name="tag_sideloaded">Not from an app store</string>
+    <string name="tag_sideloaded">Unknown source</string>
     <string name="tag_recent">Installed in last 30 days</string>
     <string name="tag_system">Pre-installed</string>
     <string name="risk_a11y">Accessibility service</string>
@@ -37,7 +37,7 @@
     <string name="tip_2">Only install apps from Google Play.</string>
     <string name="tip_3">Never tell anyone your OTP code, not even someone claiming to be bank staff.</string>
     <string name="tip_4">If you think money was taken, call your bank and the anti-fraud hotline immediately.</string>
-    <string name="section_sideloaded">Other apps not from an app store (%d)</string>
+    <string name="section_sideloaded">Other apps from unknown sources (%d)</string>
     <string name="section_store_perms">Store apps with sensitive access (%d)</string>
     <string name="section_store_perms_desc">Installed from an app store or by your phone maker. Many normal apps need these. Tap to review.</string>
     <string name="section_sideloaded_desc">They hold no dangerous access right now. If you don\'t recognise one, uninstall it.</string>
@@ -47,7 +47,7 @@
     <string name="risk_calls">Phone and call log</string>
     <string name="risk_calls_desc">Can read call history, make or redirect calls, e.g. to fake bank hotlines.</string>
     <string name="risk_vpn">VPN</string>
-    <string name="risk_vpn_desc">A VPN not from an app store can see what you do online.</string>
+    <string name="risk_vpn_desc">A VPN from an unknown source can see what you do online.</string>
     <string name="risk_usage">Usage access</string>
     <string name="risk_usage_desc">Knows when you open your bank app, so a fake page can pop up at that moment.</string>
     <string name="device_vpn">A VPN is connected right now. Make sure it is one you set up yourself.</string>

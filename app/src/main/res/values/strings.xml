@@ -5,8 +5,8 @@
     <string name="scanning">Checking your phone…</string>
     <string name="summary_danger">%d dangerous app(s) found</string>
     <string name="summary_danger_body">These apps were not installed from an app store and can read your verification codes or control your phone. Unless you are sure what they are, uninstall them now.</string>
-    <string name="summary_warning">%d app(s) hold sensitive access</string>
-    <string name="summary_warning_body">Nothing looks malicious, but check that you recognise each app. Revoke anything you did not mean to allow.</string>
+    <string name="summary_warning">%d app(s) need a check</string>
+    <string name="summary_warning_body">They hold sensitive access (e.g. Accessibility, installing other apps). Fine if you turned it on yourself. Otherwise turn it off.</string>
     <string name="summary_safe">No suspicious apps found</string>
     <string name="summary_safe_body">No app can read your SMS, notifications or screen. Check again after installing new apps.</string>
     <string name="section_danger">Dangerous</string>
@@ -38,6 +38,8 @@
     <string name="tip_3">Never tell anyone your OTP code, not even someone claiming to be bank staff.</string>
     <string name="tip_4">If you think money was taken, call your bank and the anti-fraud hotline immediately.</string>
     <string name="section_sideloaded">Other apps not from an app store (%d)</string>
+    <string name="section_store_perms">Store apps with sensitive access (%d)</string>
+    <string name="section_store_perms_desc">Installed from an app store or by your phone maker. Many normal apps need these. Tap to review.</string>
     <string name="section_sideloaded_desc">They hold no dangerous access right now. If you don\'t recognise one, uninstall it.</string>
     <string name="tag_hidden">Hidden icon</string>
     <string name="risk_keyboard">Third-party keyboard</string>

@@ -5,8 +5,8 @@
     <string name="scanning">正在檢查你的手機…</string>
     <string name="summary_danger">發現 %d 個危險 App</string>
     <string name="summary_danger_body">這些 App 不是從應用程式商店安裝的，而且能讀你的驗證碼或操控你的手機。除非你很確定它是什麼，請立刻解除安裝。</string>
-    <string name="summary_warning">有 %d 個 App 握有敏感權限</string>
-    <string name="summary_warning_body">目前看起來沒有惡意 App，但請確認每一個你都認得。不是你主動開的權限就關掉。</string>
+    <string name="summary_warning">有 %d 個 App 需要你確認</string>
+    <string name="summary_warning_body">它們握有敏感權限（例如無障礙、安裝其他 App）。如果是你自己開的就沒關係，不認得就關掉。</string>
     <string name="summary_safe">沒有發現可疑 App</string>
     <string name="summary_safe_body">目前沒有 App 能讀你的簡訊、通知或螢幕內容。安裝新 App 後記得再檢查一次。</string>
     <string name="section_danger">危險</string>
@@ -38,6 +38,8 @@
     <string name="tip_3">驗證碼不要告訴任何人，自稱銀行行員也一樣。</string>
     <string name="tip_4">懷疑被盜轉，馬上打給銀行並報警。</string>
     <string name="section_sideloaded">其他非商店安裝的 App（%d）</string>
+    <string name="section_store_perms">商店 App 的敏感權限（%d）</string>
+    <string name="section_store_perms_desc">從應用程式商店或手機原廠安裝，很多正常 App 都需要這些權限。點開檢視。</string>
     <string name="section_sideloaded_desc">目前沒有危險權限，但只要你不認得，就解除安裝。</string>
     <string name="tag_hidden">隱藏圖示</string>
     <string name="risk_keyboard">第三方輸入法</string>

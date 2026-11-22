@@ -20,20 +20,21 @@ import android.view.accessibility.AccessibilityManager
 import android.view.inputmethod.InputMethodManager
 
 /** One dangerous capability an app currently holds. Weight ≈ how directly it enables OTP theft / account takeover. */
-enum class Risk(val weight: Int) {
-    ACCESSIBILITY(100), // reads the screen, taps and types: full remote control
-    DEVICE_ADMIN(60),   // blocks uninstall, can lock / wipe
-    SMS(50),            // reads OTP text messages
-    NOTIFICATIONS(50),  // reads OTP shown in notifications
-    KEYBOARD(45),       // third-party keyboard sees every OTP and password typed
-    CALLS(40),          // call log / place calls / default dialer: call forwarding, fake bank callbacks
-    OVERLAY(30),        // fake login page drawn over the bank app
-    VPN(30),            // can intercept traffic
-    USAGE_ACCESS(20),   // knows when you open the bank app (trigger for overlays)
-    INSTALL_APPS(20),   // dropper: brings in more malware
+/** [stealsOtp]: can read an OTP or take over the phone on its own, as opposed to merely helping an attack. */
+enum class Risk(val weight: Int, val stealsOtp: Boolean) {
+    ACCESSIBILITY(100, true), // reads the screen, taps and types: full remote control
+    DEVICE_ADMIN(60, true),   // blocks uninstall, can lock / wipe
+    SMS(50, true),            // reads OTP text messages
+    NOTIFICATIONS(50, true),  // reads OTP shown in notifications
+    KEYBOARD(45, true),       // third-party keyboard sees every OTP and password typed
+    CALLS(40, true),          // call log / place calls / default dialer: call forwarding, fake bank callbacks
+    OVERLAY(30, true),        // fake login page drawn over the bank app
+    VPN(30, false),           // can intercept traffic
+    USAGE_ACCESS(20, false),  // knows when you open the bank app (trigger for overlays)
+    INSTALL_APPS(20, false),  // dropper: brings in more malware
 }
 
-enum class Level { DANGER, WARNING, SIDELOADED, OK }
+enum class Level { DANGER, WARNING, SIDELOADED, STORE_PERMS, OK }
 
 data class Finding(
     val packageName: String,
@@ -53,11 +54,15 @@ data class Finding(
         (if (recentlyInstalled) 20 else 0) + (if (hiddenIcon) 40 else 0)
 
     val level: Level = when {
-        // Sideloaded + any capability is exactly what the current scam apps look like.
-        sideloaded && risks.isNotEmpty() -> Level.DANGER
-        Risk.ACCESSIBILITY in risks -> Level.DANGER
-        risks.isNotEmpty() -> Level.WARNING
+        // Sideloaded + a way to read OTPs is exactly what the current scam apps look like;
+        // a sideloaded app hiding its icon has no innocent reason to hold anything.
+        sideloaded && (risks.any { it.stealsOtp } || (hiddenIcon && risks.isNotEmpty())) -> Level.DANGER
+        sideloaded && risks.isNotEmpty() -> Level.WARNING
+        // Store apps routinely hold notification / overlay / keyboard rights (LINE, Gboard, Teams…),
+        // so only remote control is worth interrupting the user for.
+        Risk.ACCESSIBILITY in risks -> Level.WARNING
         sideloaded -> Level.SIDELOADED
+        risks.isNotEmpty() -> Level.STORE_PERMS
         else -> Level.OK
     }
 }
@@ -79,6 +84,7 @@ object Scanner {
         "com.amazon.venezia",
         "com.asus.appmarket",
         "com.google.android.packageinstaller.private.preinstalled",
+        "com.android.chrome",                                          // WebAPKs minted by Google for PWAs
     )
 
     /** OS components that legitimately hold "install unknown apps". */
@@ -112,6 +118,10 @@ object Scanner {
             .map { it.activityInfo.packageName }.toSet()
 
         val apps = runCatching { pm.getInstalledApplications(0) }.getOrDefault(emptyList())
+        val firmwareCerts by lazy {
+            apps.filter { it.flags and ApplicationInfo.FLAG_SYSTEM != 0 }.flatMap { certsOf(pm, it.packageName) }.toSet()
+        }
+        val vendorSigned = { pkg: String -> certsOf(pm, pkg).any { it in firmwareCerts } }
         val now = System.currentTimeMillis()
 
         val findings = apps.asSequence()
@@ -149,7 +159,9 @@ object Scanner {
                 }
 
                 val installer = installerOf(pm, pkg)
-                val sideloaded = !isSystem && installer !in TRUSTED_INSTALLERS
+                // Vendor apps delivered outside a store (Galaxy Wearable plugins, Samsung update center,
+                // Smart Switch) carry the same signing key as the firmware's own apps; malware cannot.
+                val sideloaded = !isSystem && installer !in TRUSTED_INSTALLERS && !vendorSigned(pkg)
                 // VPN apps are normal from a store; a sideloaded one is not.
                 if (pkg in vpnApps && sideloaded) risks += Risk.VPN
 
@@ -176,6 +188,17 @@ object Scanner {
 
         return ScanResult(findings, DeviceStatus(vpnActive(ctx), adbEnabled(ctx)))
     }
+
+    private fun certsOf(pm: PackageManager, pkg: String): List<String> = runCatching {
+        val sigs = if (Build.VERSION.SDK_INT >= 28) {
+            val info = pm.getPackageInfo(pkg, PackageManager.GET_SIGNING_CERTIFICATES).signingInfo ?: return@runCatching emptyList()
+            if (info.hasMultipleSigners()) info.apkContentsSigners else info.signingCertificateHistory
+        } else {
+            @Suppress("DEPRECATION") pm.getPackageInfo(pkg, PackageManager.GET_SIGNATURES).signatures
+        }
+        val md = java.security.MessageDigest.getInstance("SHA-256")
+        sigs.orEmpty().map { sig -> md.digest(sig.toByteArray()).joinToString("") { "%02x".format(it) } }
+    }.getOrDefault(emptyList())
 
     private fun granted(pm: PackageManager, pkg: String, vararg perms: String) =
         perms.any { pm.checkPermission(it, pkg) == PackageManager.PERMISSION_GRANTED }

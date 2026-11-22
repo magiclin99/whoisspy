@@ -80,6 +80,8 @@ private fun App() {
     val danger = active.filter { it.level == Level.DANGER }
     val warn = active.filter { it.level == Level.WARNING }
     val sideloadedOnly = active.filter { it.level == Level.SIDELOADED }
+    val storePerms = active.filter { it.level == Level.STORE_PERMS }
+    var showStorePerms by remember { mutableStateOf(false) }
     val trustedItems = all?.filter { it.packageName in trusted }.orEmpty()
     val onTrust: (Finding) -> Unit = { f -> trustedStore.set(f.packageName, true); trusted = trustedStore.all() }
 
@@ -108,6 +110,19 @@ private fun App() {
                 Text(stringResource(R.string.section_sideloaded_desc), color = Muted, fontSize = 12.sp)
             }
             items(sideloadedOnly, key = { it.packageName }) { f -> FindingCard(f) { onTrust(f) } }
+        }
+
+        if (storePerms.isNotEmpty()) {
+            item {
+                Column(Modifier.fillMaxWidth().clickable { showStorePerms = !showStorePerms }) {
+                    SectionTitle(
+                        stringResource(R.string.section_store_perms, storePerms.size) + if (showStorePerms) "  ▲" else "  ▼",
+                        Ink,
+                    )
+                    Text(stringResource(R.string.section_store_perms_desc), color = Muted, fontSize = 12.sp)
+                }
+            }
+            if (showStorePerms) items(storePerms, key = { it.packageName }) { f -> FindingCard(f) { onTrust(f) } }
         }
 
         if (trustedItems.isNotEmpty()) {

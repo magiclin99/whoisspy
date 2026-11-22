@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">誰是間諜</string>
+    <string name="tagline">找出可能偷看你驗證碼的 App，一鍵關掉。</string>
+    <string name="scanning">正在檢查你的手機…</string>
+    <string name="summary_danger">發現 %d 個危險 App</string>
+    <string name="summary_danger_body">這些 App 不是從應用程式商店安裝的，而且能讀你的驗證碼或操控你的手機。除非你很確定它是什麼，請立刻解除安裝。</string>
+    <string name="summary_warning">有 %d 個 App 握有敏感權限</string>
+    <string name="summary_warning_body">目前看起來沒有惡意 App，但請確認每一個你都認得。不是你主動開的權限就關掉。</string>
+    <string name="summary_safe">沒有發現可疑 App</string>
+    <string name="summary_safe_body">目前沒有 App 能讀你的簡訊、通知或螢幕內容。安裝新 App 後記得再檢查一次。</string>
+    <string name="section_danger">危險</string>
+    <string name="section_warning">請確認</string>
+    <string name="section_trusted">你已信任（%d）</string>
+    <string name="tag_sideloaded">非商店安裝</string>
+    <string name="tag_recent">30 天內安裝</string>
+    <string name="tag_system">內建 App</string>
+    <string name="risk_a11y">無障礙服務</string>
+    <string name="risk_a11y_desc">能看到螢幕上所有內容，還能替你點擊、打字。詐騙集團遠端操控手機的主要手法。</string>
+    <string name="risk_sms">讀取簡訊</string>
+    <string name="risk_sms_desc">能讀到銀行傳給你的簡訊驗證碼（OTP）。</string>
+    <string name="risk_notif">通知存取</string>
+    <string name="risk_notif_desc">能讀到所有通知內容，包含驗證碼。</string>
+    <string name="risk_admin">裝置管理員</string>
+    <string name="risk_admin_desc">能鎖住手機，還能阻止你把它解除安裝。</string>
+    <string name="risk_overlay">顯示在其他應用程式上層</string>
+    <string name="risk_overlay_desc">能在銀行 App 上面蓋一個假的登入畫面。</string>
+    <string name="risk_install">安裝其他應用程式</string>
+    <string name="risk_install_desc">能偷偷裝進更多惡意 App。</string>
+    <string name="admin_first">請先關閉「裝置管理員」，否則無法解除安裝。</string>
+    <string name="action_revoke">關閉</string>
+    <string name="action_uninstall">解除安裝</string>
+    <string name="action_trust">我認得這個 App</string>
+    <string name="action_untrust">重新檢查</string>
+    <string name="tips_title">怎麼保護自己</string>
+    <string name="tip_1">銀行和政府機關不會要你開「無障礙」，也不會傳連結叫你裝 App。</string>
+    <string name="tip_2">只從 Google Play 安裝 App。</string>
+    <string name="tip_3">驗證碼不要告訴任何人，自稱銀行行員也一樣。</string>
+    <string name="tip_4">懷疑被盜轉，馬上打給銀行並撥打 165 反詐騙專線。</string>
+</resources>

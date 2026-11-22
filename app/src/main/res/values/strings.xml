@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Who\'s Spying</string>
+    <string name="tagline">Find apps that can steal your OTP codes, and shut them down.</string>
+    <string name="scanning">Checking your phone…</string>
+    <string name="summary_danger">%d dangerous app(s) found</string>
+    <string name="summary_danger_body">These apps were not installed from an app store and can read your verification codes or control your phone. Unless you are sure what they are, uninstall them now.</string>
+    <string name="summary_warning">%d app(s) hold sensitive access</string>
+    <string name="summary_warning_body">Nothing looks malicious, but check that you recognise each app. Revoke anything you did not mean to allow.</string>
+    <string name="summary_safe">No suspicious apps found</string>
+    <string name="summary_safe_body">No app can read your SMS, notifications or screen. Check again after installing new apps.</string>
+    <string name="section_danger">Dangerous</string>
+    <string name="section_warning">Please check</string>
+    <string name="section_trusted">Trusted by you (%d)</string>
+    <string name="tag_sideloaded">Not from an app store</string>
+    <string name="tag_recent">Installed in last 30 days</string>
+    <string name="tag_system">Pre-installed</string>
+    <string name="risk_a11y">Accessibility service</string>
+    <string name="risk_a11y_desc">Can read everything on screen, tap and type for you. The main tool scammers use to take over phones.</string>
+    <string name="risk_sms">Read SMS</string>
+    <string name="risk_sms_desc">Can read the one-time codes your bank texts you.</string>
+    <string name="risk_notif">Notification access</string>
+    <string name="risk_notif_desc">Can read every notification, including OTP codes.</string>
+    <string name="risk_admin">Device admin</string>
+    <string name="risk_admin_desc">Can lock your phone and stop you from uninstalling it.</string>
+    <string name="risk_overlay">Display over other apps</string>
+    <string name="risk_overlay_desc">Can draw a fake login page on top of your bank app.</string>
+    <string name="risk_install">Install other apps</string>
+    <string name="risk_install_desc">Can silently bring in more malicious apps.</string>
+    <string name="admin_first">Turn off Device admin first, otherwise the app cannot be uninstalled.</string>
+    <string name="action_revoke">Turn off</string>
+    <string name="action_uninstall">Uninstall</string>
+    <string name="action_trust">I know this app</string>
+    <string name="action_untrust">Check again</string>
+    <string name="tips_title">How to stay safe</string>
+    <string name="tip_1">Banks and government agencies never ask you to turn on Accessibility or install an app from a link.</string>
+    <string name="tip_2">Only install apps from Google Play.</string>
+    <string name="tip_3">Never tell anyone your OTP code, not even someone claiming to be bank staff.</string>
+    <string name="tip_4">If you think money was taken, call your bank and the anti-fraud hotline immediately.</string>
+</resources>

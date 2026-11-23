@@ -165,9 +165,21 @@ object Scanner {
                 val updatedSystem = ai.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP != 0
                 val risks = mutableListOf<Risk>()
 
+                val installer = installerOf(pm, pkg)
+                // Vendor apps delivered outside a store (Galaxy Wearable plugins, Samsung update center,
+                // Smart Switch) carry the same signing key as the firmware's own apps; malware cannot.
+                // That only holds when it also arrived through a vendor channel: vendor keys have leaked
+                // before, and a scam APK always comes in through the generic installer.
+                val vendorApp = !isSystem && !fromFile(pm, pkg) && installer != null &&
+                    installer !in GENERIC_INSTALLERS && vendorSigned(pkg)
+                val official = vendorApp || (!fromFile(pm, pkg) && installer != null && isGenuineStore(installer))
+                val sideloaded = !isSystem && !official
+                // The phone maker's own apps are judged like pre-installed ones, however they were delivered.
+                val firmware = isSystem || vendorApp
+
                 // Pre-installed system apps (Find My Device, System Intelligence, Messages…) hold these
                 // by default and malware cannot be a system app, so only third-party apps are judged.
-                if (!isSystem) {
+                if (!firmware) {
                     if (pkg in a11y) risks += Risk.ACCESSIBILITY
                     if (pkg in notif) risks += Risk.NOTIFICATIONS
                     if (pkg in admins) risks += Risk.DEVICE_ADMIN
@@ -176,11 +188,11 @@ object Scanner {
                 // "Install unknown apps" is off by default for every app, so an explicit allow on a
                 // pre-installed browser / chat app is the doorway malware came through.
                 if (opMode(ctx, "android:request_install_packages", ai) == AppOpsManager.MODE_ALLOWED &&
-                    (!isSystem || (updatedSystem && pkg in launchable && pkg !in OS_INSTALLERS))
+                    (!firmware || ((updatedSystem || vendorApp) && pkg in launchable && pkg !in OS_INSTALLERS))
                 ) risks += Risk.INSTALL_APPS
 
                 // Runtime permissions: pre-installed dialer / Messages legitimately hold these.
-                if (!isSystem) {
+                if (!firmware) {
                     if (granted(pm, pkg, Manifest.permission.READ_SMS, Manifest.permission.RECEIVE_SMS) || pkg == defaultSms)
                         risks += Risk.SMS
                     if (granted(pm, pkg, *CALL_PERMS.toTypedArray()) || pkg == defaultDialer) risks += Risk.CALLS
@@ -189,15 +201,6 @@ object Scanner {
                         risks += Risk.USAGE_ACCESS
                 }
 
-                val installer = installerOf(pm, pkg)
-                // Vendor apps delivered outside a store (Galaxy Wearable plugins, Samsung update center,
-                // Smart Switch) carry the same signing key as the firmware's own apps; malware cannot.
-                // That only holds when it also arrived through a vendor channel: vendor keys have leaked
-                // before, and a scam APK always comes in through the generic installer.
-                val official = !fromFile(pm, pkg) && installer != null && (
-                    isGenuineStore(installer) || (installer !in GENERIC_INSTALLERS && vendorSigned(pkg))
-                )
-                val sideloaded = !isSystem && !official
                 // VPN apps are normal from a store; a sideloaded one is not.
                 if (pkg in vpnApps && sideloaded) risks += Risk.VPN
 
